@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  phoneNumber String   @unique
+  name        String?
+  isBlocked   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orders      Order[]
+}
+
+model MenuItem {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  category    String
+  imageUrl    String?
+  isAvailable Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id           String         @id @default(uuid())
+  userId       String
+  status       OrderStatus    @default(CREATED)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  orderItems   OrderItem[]
+  user         User           @relation(fields: [userId], references: [id])
+  paymentRecord PaymentRecord?
+}
+
+model OrderItem {
+  id         String   @id @default(uuid())
+  orderId    String
+  menuItemId String
+  quantity   Int
+  price      Float
+  notes      String?
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+model PaymentRecord {
+  id            String        @id @default(uuid())
+  orderId       String        @unique
+  amount        Float
+  paymentMethod PaymentMethod
+  paymentStatus PaymentStatus @default(PENDING)
+  transactionId String?
+  verifiedBy    String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum OrderStatus {
+  CREATED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  UPI
+  CASH
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  VERIFIED
+}
