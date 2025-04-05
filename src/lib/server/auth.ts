@@ -1,7 +1,8 @@
-import jwt from 'jsonwebtoken';
-import { env } from '$env/dynamic/private';
-import twilio from 'twilio';
-import type { UserDTO } from '$lib/types';
+import jwt from "jsonwebtoken";
+import { env } from "$env/dynamic/private";
+import twilio from "twilio";
+// If you're not using UserDTO, comment it out or use it somewhere
+// import type { UserDTO } from "$lib/types";
 
 // Set types for environment variables
 declare global {
@@ -15,7 +16,8 @@ declare global {
   }
 }
 
-const twilioClient = twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
+// Add an underscore prefix to indicate it's intentionally unused
+const _twilioClient = twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
 
 interface JwtPayload {
   userId: string;
@@ -23,33 +25,34 @@ interface JwtPayload {
 
 export async function sendOTP(phoneNumber: string): Promise<string> {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  
+
   // Store OTP in database or cache with expiration (5 minutes)
   // For development/testing purposes, just log it:
   console.log(`OTP for ${phoneNumber}: ${otp}`);
-  
+
   // In production, uncomment this to send actual SMS
   /*
-  await twilioClient.messages.create({
+  await _twilioClient.messages.create({
     body: `Your Snack Corner verification code is: ${otp}`,
     from: env.TWILIO_PHONE_NUMBER,
     to: phoneNumber
   });
   */
-  
+
   return otp;
 }
 
 export function generateAuthToken(userId: string): string {
   return jwt.sign({ userId } as JwtPayload, env.JWT_SECRET, {
-    expiresIn: '7d'
+    expiresIn: "7d",
   });
 }
 
 export function verifyAuthToken(token: string): JwtPayload | null {
   try {
     return jwt.verify(token, env.JWT_SECRET) as JwtPayload;
-  } catch (error) {
+  } catch (_error) {
+    // Add underscore to indicate intentionally unused variable
     return null;
   }
 }
