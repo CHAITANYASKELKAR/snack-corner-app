@@ -26,7 +26,7 @@ export default [
   },
   
   // TypeScript files configuration
-  tseslint.configs.recommended,
+  ...tseslint.configs.recommended,
   
   {
     files: ['**/*.ts'],
